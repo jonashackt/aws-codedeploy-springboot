@@ -295,6 +295,14 @@ cd '/home/ubuntu/spring-boot-vuejs'
 java -jar backend-0.0.1-SNAPSHOT.jar
 ```
 
+
+## Problems
+
+appspec.yml and runas.sh not copied to S3 - so they arent there for CodeDeploy
+
+--> solution add them in a general zip https://github.com/airavata-courses/TeamApex
+
+
 # Links
 
 * TravisCI CodeDeploy integration: https://docs.travis-ci.com/user/deployment/codedeploy/
