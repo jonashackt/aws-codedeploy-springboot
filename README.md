@@ -172,8 +172,34 @@ Then next:Permissions - and select the formerly created `awscodedeploy` Policy. 
 
 On your Main AWS dashboard click the big blue button __Launch Instance__. Now select e.g. `Ubuntu Server 14.04 LTS (HVM), SSD Volume Type` as AMI. Then select the "Free tier eligible" __t2.micro__ and don´t click the blue "Review and Lauch", instead click on __Next:Configure Instance Details__.
 
-Be sure to __NOW__ select the pre-created IAM Service Role `CodeDeploy-EC2-deploy-instance` (you can´t do this step later on an existing EC2 instance!). Now click __Next:Add Storage__ and leave everything and click __Next:Add Tags__. Add a Tag for CodeDeploy to reference, like `codedeploy` as key and `This tag is used by CodeDeploy for... deployment`.
+Be sure to __NOW__ select the pre-created IAM Service Role `CodeDeploy-EC2-deploy-instance` (you can´t do this step later on an existing EC2 instance!). Now click __Next:Add Storage__ and leave everything and click __Next:Add Tags__. Add a Tag for CodeDeploy to reference, like `codedeploy` as key and `This tag is used by CodeDeploy for... deployment`. 
 
+Next configure 2 Security Groups: SSH (just click add Rule) and a Custom TCP Rule with port 8088 for our app.
+
+Now click __Review and Launch__. (Don´t forget to download the keypair for later access of the instance)
+
+
+##### Create S3 Bucket
+
+Click on "Services" on top of the AWS console and type `S3` and click on it. Click `Create Bucket` button and type a name like `spring-boot-vuejs-bucket`. Overgo `Set properties` and `Set permissions` and then click `Create Bucket`. Should look like this:
+
+![aws-s3-bucket](aws-s3-bucket.png)
+
+##### Configure Amazon CodeDeploy
+
+Click on "Services" on top of the AWS console and type `CodeDeploy` and click on it. Click on "Get Started Now" and choose the `custom deployment`/Skip Walkthrough. Type in an application name like `spring-boot-vuejs` (remember the NameOfTheCodeDeployApplicationNameHERE from the Travis-Code-Deploy-Policy) and a Deployment group name, like `spring-boot-apps`.
+
+![aws-codedeploy-config](aws-codedeploy-config.png)
+
+Select our EC2 instances with the configured Tag:
+
+![aws-codedeploy-config-env](aws-codedeploy-config-env.png)
+
+Now select the Service Role `CodeDeployServiceRole` we created:
+
+![aws-codedeploy-config-role](aws-codedeploy-config-service-role.png) 
+
+And finally click on `Create Application`.
 
 
 # Links
