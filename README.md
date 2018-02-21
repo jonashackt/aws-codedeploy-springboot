@@ -168,7 +168,7 @@ Go to https://console.aws.amazon.com/iam/ again and create a new Role. Select `E
 Then next:Permissions - and select the formerly created `awscodedeploy` Policy. Then next:Review and type a Role name, like `CodeDeploy-EC2-deploy-instance`.
 
 
-##### Create EC2 instance
+##### Create EC2 instance (Ubuntu 14.04 LTS)
 
 On your Main AWS dashboard click the big blue button __Launch Instance__. Now select e.g. `Ubuntu Server 14.04 LTS (HVM), SSD Volume Type` as AMI. Then select the "Free tier eligible" __t2.micro__ and don´t click the blue "Review and Lauch", instead click on __Next:Configure Instance Details__.
 
@@ -201,6 +201,99 @@ Now select the Service Role `CodeDeployServiceRole` we created:
 
 And finally click on `Create Application`.
 
+##### configure .travis.yml 
+
+* Install Travis CLI
+
+* Encrypt Secret access key: `travis encrypt --add deploy.secret_access_key`
+
+Edit https://github.com/jonashackt/spring-boot-vuejs/blob/master/.travis.yml and add `deploy` section. Also insert your data accordingly:
+
+* bucket
+* region
+* repo - your github Repo name incl. orga here
+
+
+```
+deploy:
+- provider: s3
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+  local_dir: dpl_cd_upload
+  skip_cleanup: true
+  on: &2
+    repo: organization/reponameHERE
+  bucket: yourBucketNameHERE
+  region: bucketRegionHERE
+- provider: codedeploy
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+  bucket: yourBucketNameHERE
+  key: latest.zip
+  bundle_type: zip
+  application: NameOfTheCodeDeployApplicationNameHERE
+  deployment_group: CodeDeployDeploymentGroupNameHERE
+  region: serverRegionHERE
+  on: *2
+```
+
+
+Just push the new .travis.yml to your GitHub repo and have a look into the Travis console, it should look like this:
+
+![travis-deployment](aws-travis-deployment.png) 
+
+
+##### Connect to your EC2 instance
+see https://docs.aws.amazon.com/de_de/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html
+
+* change permissions of your .pem file
+
+chmod 400 /path/my-key-pair.pem
+
+* ssh into EC2 instance (root for Ubuntu)
+
+ssh -i spring-boot-vuejs.pem ubuntu@YOUR_INSTANCE_NAME.eu-central-1.compute.amazonaws.com
+
+
+##### install CodeDeploy agent on EC2 instance
+
+see https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-ubuntu.html
+
+```
+sudo apt-get update
+sudo apt-get install ruby2.0
+sudo apt-get install wget
+cd /home/ubuntu
+wget https://aws-codedeploy-eu-central-1.s3.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+
+# Check the agent is running fine
+sudo service codedeploy-agent status 
+```
+
+##### create appspec.yml
+
+```
+version: 0.0
+os: linux
+files:
+  - source: ./
+    destination: /home/ubuntu/spring-boot-vuejs
+hooks:
+  ApplicationStart:
+    - location: runapp.sh
+      runas: ubuntu
+```
+
+##### runas.sh
+
+```
+#!/usr/bin/env bash
+echo 'Starting Spring Boot app'
+cd '/home/ubuntu/spring-boot-vuejs'
+java -jar backend-0.0.1-SNAPSHOT.jar
+```
 
 # Links
 
