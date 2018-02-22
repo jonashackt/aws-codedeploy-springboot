@@ -207,34 +207,42 @@ And finally click on `Create Application`.
 
 * Encrypt Secret access key: `travis encrypt --add deploy.secret_access_key`
 
-Edit https://github.com/jonashackt/spring-boot-vuejs/blob/master/.travis.yml and add `deploy` section. Also insert your data accordingly:
-
-* bucket
-* region
-* repo - your github Repo name incl. orga here
+Edit https://github.com/jonashackt/spring-boot-vuejs/blob/master/.travis.yml and add `deploy` section. Also insert your data accordingly. Here´s an example:
 
 
 ```
+language: java
+
+jdk:
+- oraclejdk8
+
+script: mvn clean install jacoco:report coveralls:report
+
+cache:
+  directories:
+    - node_modules
+
 deploy:
-- provider: s3
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key: $AWS_SECRET_KEY
-  local_dir: dpl_cd_upload
-  skip_cleanup: true
-  on: &2
-    repo: organization/reponameHERE
-  bucket: yourBucketNameHERE
-  region: bucketRegionHERE
-- provider: codedeploy
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key: $AWS_SECRET_KEY
-  bucket: yourBucketNameHERE
-  key: latest.zip
-  bundle_type: zip
-  application: NameOfTheCodeDeployApplicationNameHERE
-  deployment_group: CodeDeployDeploymentGroupNameHERE
-  region: serverRegionHERE
-  on: *2
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    local_dir: /home/travis/build/jonashackt/spring-boot-vuejs/backend/target
+    skip_cleanup: true
+    on: &1
+      repo: jonashackt/spring-boot-vuejs
+    bucket: spring-boot-vuejs-bucket
+    region: eu-central-1
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    bucket: spring-boot-vuejs-bucket
+    key: backend-0.0.1-SNAPSHOT.jar
+    bundle_type: zip
+    application: spring-boot-vuejs
+    deployment_group: spring-boot-apps
+    region: eu-central-1
+    on: *1
+    wait-until-deployed: true
 ```
 
 
